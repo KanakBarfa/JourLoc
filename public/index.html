@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JourLoc</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar__header">
+          <button id="sidebarToggle" class="icon-button" aria-label="Toggle sidebar">☰</button>
+          <div class="sidebar__title">JourLoc</div>
+        </div>
+        <div class="sidebar__actions">
+          <input id="searchInput" class="text-input" type="search" placeholder="Search title" />
+          <button id="newPage" class="primary-button">New page</button>
+        </div>
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Tags</div>
+          <div id="tagList" class="tag-list"></div>
+        </div>
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Pages</div>
+          <div id="pageList" class="page-list"></div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="main__header">
+          <input id="titleInput" class="title-input" placeholder="Page title" />
+          <div class="header__actions">
+            <button id="savePage" class="primary-button">Save</button>
+            <button id="deletePage" class="ghost-button">Delete</button>
+          </div>
+        </header>
+        <div class="meta">
+          <input id="tagsInput" class="text-input" placeholder="Tags (comma separated)" />
+          <div id="status" class="status"></div>
+        </div>
+        <div class="editor">
+          <textarea id="contentInput" class="content" placeholder="Write your markdown here..."></textarea>
+          <div id="preview" class="preview"></div>
+        </div>
+      </main>
+    </div>
+
+    <div id="loginOverlay" class="overlay hidden">
+      <div class="login-card">
+        <h2>JourLoc Login</h2>
+        <p>Enter the shared password to unlock this journal.</p>
+        <input id="passwordInput" type="password" class="text-input" placeholder="Password" />
+        <button id="loginButton" class="primary-button">Unlock</button>
+        <div id="loginError" class="error"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
