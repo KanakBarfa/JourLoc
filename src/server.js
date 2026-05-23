@@ -25,6 +25,14 @@ if (!password || !sessionSecret) {
 
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
+app.get("/vendor/marked.min.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "node_modules", "marked", "marked.min.js"));
+});
+app.get("/vendor/purify.min.js", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "..", "node_modules", "dompurify", "dist", "purify.min.js")
+  );
+});
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 function issueToken() {
