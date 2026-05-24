@@ -2,6 +2,8 @@
 
 JourLoc is a vibe coded journaling web app for keeping my personal notes on a local network. It is designed for one shared password, not multiple user accounts, so you can open it from any device on your LAN and keep your journal data in one place.
 
+<img src="./resources/image.png" alt="JourLoc" style="max-width:800px; width:100%; height:auto;" />
+
 ## What it does
 - Create, edit, and delete journal pages.
 - Write page content in Markdown.
