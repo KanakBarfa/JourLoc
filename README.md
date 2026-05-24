@@ -1,6 +1,6 @@
 # JourLoc
 
-JourLoc is a vibe coded journaling web app for keeping my personal notes on a local network. It is designed for one shared password, not multiple user accounts, so you can open it from any device on your LAN and keep your journal data in one place.
+JourLoc is a self-hosted journaling web app for keeping personal notes on a local network. It uses one shared password instead of separate user accounts, so any device on your LAN can open the app and access the same journal.
 
 <img src="./resources/image.png" alt="JourLoc" style="max-width:800px; width:100%; height:auto;" />
 
@@ -13,10 +13,11 @@ JourLoc is a vibe coded journaling web app for keeping my personal notes on a lo
 - Use a collapsible sidebar to navigate pages quickly.
 
 ## How it works
-- The app runs as a single Node.js service with an Express API and frontend.
+- The backend is a single Rust service built with Axum.
 - Data is stored in Postgres.
-- The app is intended to be run in Docker and configured with environment variables.
-- The client is kept lightweight and the app works offline after the image is built.
+- The app is intended to run in Docker and configured with environment variables.
+- Static files are served by the Rust backend, and browser vendor files are copied into the image at build time.
+- The app works offline after the image is built.
 
 ## Environment variables
 Create a `.env` file from `.env.example` and set:
@@ -35,19 +36,12 @@ docker compose up --build
 
 3. Open the app at `http://localhost:3000`.
 
+The Docker build uses Node only to fetch browser-side assets such as the Markdown and math rendering libraries. The running container does not need Node.
+
 ## Development
 1. Make sure Postgres is running and `DATABASE_URL` points to it.
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Start the dev server:
-
-```bash
-npm run dev
-```
+2. Build and run the Rust backend with Cargo inside a Rust environment or container.
+3. Open the app on the configured port.
 
 ## Notes
 - The database is meant to be persisted with a Docker volume so data survives image rebuilds and redeploys.

@@ -2,12 +2,8 @@
   "name": "jourloc",
   "version": "0.1.0",
   "private": true,
-  "description": "Local journaling app with markdown pages",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
-  },
+  "description": "Build-time browser assets for the JourLoc web app",
+  "scripts": {},
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",

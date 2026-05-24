@@ -3,3 +3,14 @@ node_modules/
 .env.*
 *.log
 data/
+target/
+# Editor and OS
+.DS_Store
+.vscode/
+.idea/
+
+# Local DB / caches
+*.sqlite
+*.sqlite3
+*.db
+.pytest_cache/
