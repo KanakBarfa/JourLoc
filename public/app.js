@@ -221,91 +221,13 @@ function renderPreview() {
 
   // Insert into preview container
   elements.preview.innerHTML = clean;
-  // Replace math delimiters in text nodes with code elements for KaTeX to render
-  function walkAndReplaceText(node) {
-    const SKIP_TAGS = new Set(["CODE", "PRE", "SCRIPT", "STYLE", "TEXTAREA", "A"]);
-    if (node.nodeType === Node.TEXT_NODE) {
-      let text = node.nodeValue;
-      if (!text) return;
-
-      // Handle display math $$...$$ first (can include newlines)
-      const displayRegex = /\$\$([\s\S]+?)\$\$/g;
-      let parent = node.parentNode;
-      let match;
-      let lastIndex = 0;
-      const fragments = [];
-      while ((match = displayRegex.exec(text)) !== null) {
-        const before = text.slice(lastIndex, match.index);
-        if (before) fragments.push(document.createTextNode(before));
-        const code = document.createElement("code");
-        code.className = "math-display";
-        code.textContent = match[1];
-        fragments.push(code);
-        lastIndex = match.index + match[0].length;
-      }
-      if (lastIndex > 0) {
-        const after = text.slice(lastIndex);
-        if (after) fragments.push(document.createTextNode(after));
-        fragments.forEach((f) => parent.insertBefore(f, node));
-        parent.removeChild(node);
-        return;
-      }
-
-      // Handle inline math $...$
-      const inlineRegex = /(?<!\\)\$([^\$\n]+?)\$/g;
-      lastIndex = 0;
-      const inlineFragments = [];
-      while ((match = inlineRegex.exec(text)) !== null) {
-        const before = text.slice(lastIndex, match.index);
-        if (before) inlineFragments.push(document.createTextNode(before));
-        const code = document.createElement("code");
-        code.className = "math-inline";
-        code.textContent = match[1];
-        inlineFragments.push(code);
-        lastIndex = match.index + match[0].length;
-      }
-      if (lastIndex > 0) {
-        const after = text.slice(lastIndex);
-        if (after) inlineFragments.push(document.createTextNode(after));
-        inlineFragments.forEach((f) => parent.insertBefore(f, node));
-        parent.removeChild(node);
-        return;
-      }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      if (SKIP_TAGS.has(node.tagName)) return;
-      // copy childNodes into array because we'll modify the DOM
-      const children = Array.from(node.childNodes);
-      for (const child of children) walkAndReplaceText(child);
+  // Ask MathJax to typeset the preview area if available
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    try {
+      window.MathJax.typesetPromise([elements.preview]).catch(() => {});
+    } catch (e) {
+      // ignore
     }
-  }
-
-  walkAndReplaceText(elements.preview);
-
-  // Then render KaTeX for inline $...$ and display $$...$$ blocks
-  if (window.katex) {
-    // render display math
-    const displayNodes = elements.preview.querySelectorAll("code.math-display");
-    displayNodes.forEach((node) => {
-      try {
-        const tex = node.textContent || "";
-        node.innerHTML = "";
-        window.katex.render(tex, node, { displayMode: true, throwOnError: false });
-      } catch (e) {
-        // leave raw if render fails
-      }
-    });
-
-    // render inline math
-    const inlineNodes = elements.preview.querySelectorAll("code.math-inline");
-    inlineNodes.forEach((node) => {
-      try {
-        const tex = node.textContent || "";
-        node.innerHTML = "";
-        window.katex.render(tex, node, { displayMode: false, throwOnError: false });
-      } catch (e) {
-        // leave raw if render fails
-      }
-    });
   }
 }
 

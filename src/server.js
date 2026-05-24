@@ -33,11 +33,8 @@ app.get("/vendor/purify.min.js", (req, res) => {
     path.join(__dirname, "..", "node_modules", "dompurify", "dist", "purify.min.js")
   );
 });
-app.get("/vendor/katex.min.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "node_modules", "katex", "dist", "katex.min.js"));
-});
-app.get("/vendor/katex.min.css", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "node_modules", "katex", "dist", "katex.min.css"));
+app.get("/vendor/mathjax/es5/tex-mml-chtml.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "node_modules", "mathjax", "es5", "tex-mml-chtml.js"));
 });
 app.use(express.static(path.join(__dirname, "..", "public")));
 
