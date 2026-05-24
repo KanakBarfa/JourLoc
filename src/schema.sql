@@ -19,3 +19,21 @@ CREATE TABLE IF NOT EXISTS page_tags (
 
 CREATE INDEX IF NOT EXISTS idx_pages_title ON pages (LOWER(title));
 CREATE INDEX IF NOT EXISTS idx_tags_name ON tags (LOWER(name));
+
+-- Remove orphan tags (tags not referenced by any page_tags row).
+-- Function is idempotent (CREATE OR REPLACE) and trigger is recreated safely.
+CREATE OR REPLACE FUNCTION cleanup_orphan_tags() RETURNS trigger AS $$
+BEGIN
+  DELETE FROM tags t
+  WHERE NOT EXISTS (
+    SELECT 1 FROM page_tags pt WHERE pt.tag_id = t.id
+  );
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_cleanup_orphan_tags ON page_tags;
+CREATE TRIGGER trg_cleanup_orphan_tags
+AFTER DELETE OR UPDATE OF tag_id ON page_tags
+FOR EACH STATEMENT
+EXECUTE FUNCTION cleanup_orphan_tags();
