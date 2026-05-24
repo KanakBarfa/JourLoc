@@ -25,6 +25,13 @@ body {
   height: 100vh;
 }
 
+.sidebar-resizer {
+  width: 8px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 5;
+}
+
 .sidebar {
   width: 280px;
   background: var(--surface);
@@ -168,12 +175,26 @@ body {
   line-height: 1.5;
 }
 
+
 .editor {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 8px 1fr;
   gap: 16px;
   min-height: 0;
+  align-items: stretch;
+}
+
+.editor__left,
+.editor__right {
+  min-height: 0;
+}
+
+.editor__resizer {
+  width: 8px;
+  cursor: col-resize;
+  background: transparent;
+  align-self: stretch;
 }
 
 .content {
@@ -286,4 +307,20 @@ body {
   .editor {
     grid-template-columns: 1fr;
   }
+}
+
+/* Collapsed editor: hide left column and its resizer */
+.editor-collapsed .editor__left,
+.editor-collapsed .editor__resizer {
+  display: none;
+}
+
+/* When editor collapsed, preview should take full width */
+.editor-collapsed .editor {
+  grid-template-columns: 1fr;
+}
+
+/* When editor collapsed, make app layout show sidebar + preview only */
+.editor-collapsed .main {
+  padding-left: 16px;
 }

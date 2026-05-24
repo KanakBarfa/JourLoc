@@ -27,10 +27,13 @@
         </div>
       </aside>
 
+      <div id="sidebarResizer" class="sidebar-resizer" role="separator" aria-orientation="vertical"></div>
+
       <main class="main">
         <header class="main__header">
           <input id="titleInput" class="title-input" placeholder="Page title" />
           <div class="header__actions">
+            <button id="toggleEditor" class="ghost-button" title="Hide editor">⇤</button>
             <button id="savePage" class="primary-button">Save</button>
             <button id="deletePage" class="ghost-button">Delete</button>
           </div>
@@ -39,9 +42,14 @@
           <input id="tagsInput" class="text-input" placeholder="Tags (comma separated)" />
           <div id="status" class="status"></div>
         </div>
-        <div class="editor">
-          <textarea id="contentInput" class="content" placeholder="Write your markdown here..."></textarea>
-          <div id="preview" class="preview"></div>
+        <div class="editor" id="editor">
+          <div class="editor__left" id="editorLeft">
+            <textarea id="contentInput" class="content" placeholder="Write your markdown here..."></textarea>
+          </div>
+          <div class="editor__resizer" id="editorResizer" role="separator" aria-orientation="vertical"></div>
+          <div class="editor__right" id="editorRight">
+            <div id="preview" class="preview"></div>
+          </div>
         </div>
       </main>
     </div>

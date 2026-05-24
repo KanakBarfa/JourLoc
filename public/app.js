@@ -24,6 +24,13 @@ const elements = {
   loginError: document.getElementById("loginError"),
   sidebarToggle: document.getElementById("sidebarToggle"),
   sidebar: document.getElementById("sidebar"),
+  sidebarResizer: document.getElementById("sidebarResizer"),
+  editor: document.getElementById("editor"),
+  editorResizer: document.getElementById("editorResizer"),
+  editorLeft: document.getElementById("editorLeft"),
+  editorRight: document.getElementById("editorRight"),
+  toggleEditor: document.getElementById("toggleEditor"),
+  app: document.getElementById("app"),
 };
 
 async function apiFetch(path, options = {}) {
@@ -248,6 +255,74 @@ function bindEvents() {
   elements.savePage.addEventListener("click", saveCurrentPage);
   elements.deletePage.addEventListener("click", deleteCurrentPage);
   elements.contentInput.addEventListener("input", renderPreview);
+  // Toggle editor visibility
+  elements.toggleEditor.addEventListener("click", () => {
+    const collapsed = elements.app.classList.toggle("editor-collapsed");
+    elements.toggleEditor.title = collapsed ? "Show editor" : "Hide editor";
+    elements.toggleEditor.textContent = collapsed ? "⇥" : "⇤";
+    // re-run MathJax typeset after layout change
+    setTimeout(() => renderPreview(), 50);
+  });
+
+  // Sidebar resizer drag
+  if (elements.sidebarResizer && elements.sidebar) {
+    let isDragging = false;
+    let startX = 0;
+    let startWidth = 0;
+    elements.sidebarResizer.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startWidth = elements.sidebar.offsetWidth;
+      document.body.style.userSelect = "none";
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      let newWidth = startWidth + dx;
+      const min = 120;
+      const max = window.innerWidth - 200;
+      newWidth = Math.max(min, Math.min(max, newWidth));
+      elements.sidebar.style.width = `${newWidth}px`;
+    });
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        document.body.style.userSelect = "";
+      }
+    });
+  }
+
+  // Editor resizer drag
+  if (elements.editorResizer && elements.editorLeft && elements.editorRight && elements.editor) {
+    let dragging = false;
+    let startX = 0;
+    let leftStart = 0;
+    let rightStart = 0;
+    elements.editorResizer.addEventListener("mousedown", (e) => {
+      dragging = true;
+      startX = e.clientX;
+      leftStart = elements.editorLeft.getBoundingClientRect().width;
+      rightStart = elements.editorRight.getBoundingClientRect().width;
+      document.body.style.userSelect = "none";
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      let newLeft = leftStart + dx;
+      let newRight = Math.max(100, rightStart - dx);
+      const minLeft = 120;
+      const minRight = 120;
+      if (newLeft < minLeft) newLeft = minLeft;
+      if (newRight < minRight) newRight = minRight;
+      elements.editor.style.gridTemplateColumns = `${newLeft}px 8px ${newRight}px`;
+    });
+    document.addEventListener("mouseup", () => {
+      if (dragging) {
+        dragging = false;
+        document.body.style.userSelect = "";
+      }
+    });
+  }
   elements.searchInput.addEventListener("input", (event) => {
     state.search = event.target.value.trim();
     loadPages();
