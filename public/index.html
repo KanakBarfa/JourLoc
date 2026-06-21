@@ -3,50 +3,97 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>JourLoc</title>
+    <title>JourLoc — Secure Markdown Journal</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div id="app" class="app">
+      <!-- Sidebar -->
       <aside id="sidebar" class="sidebar">
         <div class="sidebar__header">
-          <button id="sidebarToggle" class="icon-button" aria-label="Toggle sidebar">☰</button>
+          <button id="sidebarToggle" class="icon-button" aria-label="Toggle sidebar">
+            <!-- Sleek SVG menu icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
           <div class="sidebar__title">JourLoc</div>
         </div>
+        
         <div class="sidebar__actions">
-          <input id="searchInput" class="text-input" type="search" placeholder="Search title" />
-          <button id="newPage" class="primary-button">New page</button>
+          <div class="search-container">
+            <input id="searchInput" class="text-input" type="search" placeholder="Search pages..." />
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <button id="newPage" class="primary-button new-page-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            New page
+          </button>
         </div>
-        <div class="sidebar__section">
-          <div class="sidebar__section-title">Tags</div>
-          <div id="tagList" class="tag-list"></div>
+
+        <div class="sidebar__content">
+          <div class="sidebar__section">
+            <div class="sidebar__section-title">Tags</div>
+            <div id="tagList" class="tag-list"></div>
+          </div>
+          <div class="sidebar__section">
+            <div class="sidebar__section-title">Pages</div>
+            <div id="pageList" class="page-list"></div>
+          </div>
         </div>
-        <div class="sidebar__section">
-          <div class="sidebar__section-title">Pages</div>
-          <div id="pageList" class="page-list"></div>
+
+        <div class="sidebar__footer">
+          <button id="logoutButton" class="ghost-button logout-btn" title="Log Out">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Log out</span>
+          </button>
         </div>
       </aside>
 
-      <div id="sidebarResizer" class="sidebar-resizer" role="separator" aria-orientation="vertical"></div>
+      <!-- Resizer between sidebar and main -->
+      <div id="sidebarResizer" class="sidebar-resizer" role="separator" aria-orientation="vertical">
+        <div class="resizer-handle"></div>
+      </div>
 
+      <!-- Main workspace -->
       <main class="main">
         <header class="main__header">
-          <input id="titleInput" class="title-input" placeholder="Page title" />
+          <input id="titleInput" class="title-input" placeholder="Untitled Journal Entry" />
           <div class="header__actions">
-            <button id="toggleEditor" class="ghost-button" title="Hide editor">⇤</button>
-            <button id="savePage" class="primary-button">Save</button>
-            <button id="deletePage" class="ghost-button">Delete</button>
+            <button id="toggleEditor" class="ghost-button hide-editor-btn" title="Hide Editor">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>Hide editor</span>
+            </button>
+            <button id="savePage" class="primary-button save-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save
+            </button>
+            <button id="deletePage" class="ghost-button delete-btn" title="Delete entry">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
           </div>
         </header>
+
         <div class="meta">
-          <input id="tagsInput" class="text-input" placeholder="Tags (comma separated)" />
+          <div class="tags-input-container">
+            <svg class="tags-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+            <input id="tagsInput" class="text-input tags-input" placeholder="Add tags (comma separated)" />
+          </div>
           <div id="status" class="status"></div>
         </div>
+
         <div class="editor" id="editor">
+          <!-- Editor Pane -->
           <div class="editor__left" id="editorLeft">
-            <textarea id="contentInput" class="content" placeholder="Write your markdown here..."></textarea>
+            <textarea id="contentInput" class="content" placeholder="Start typing in markdown... Use $$...$$ for MathJax formulas."></textarea>
           </div>
-          <div class="editor__resizer" id="editorResizer" role="separator" aria-orientation="vertical"></div>
+          <!-- Editor Split Resizer -->
+          <div class="editor__resizer" id="editorResizer" role="separator" aria-orientation="vertical">
+            <div class="resizer-handle-vert"></div>
+          </div>
+          <!-- Preview Pane -->
           <div class="editor__right" id="editorRight">
             <div id="preview" class="preview"></div>
           </div>
@@ -54,16 +101,25 @@
       </main>
     </div>
 
+    <!-- Login Dialog Portal -->
     <div id="loginOverlay" class="overlay hidden">
       <div class="login-card">
-        <h2>JourLoc Login</h2>
-        <p>Enter the shared password to unlock this journal.</p>
-        <input id="passwordInput" type="password" class="text-input" placeholder="Password" />
-        <button id="loginButton" class="primary-button">Unlock</button>
+        <div class="login-logo">
+          <div class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path><defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818cf8" /><stop offset="100%" stop-color="#c084fc" /></linearGradient></defs></svg>
+          </div>
+          <h2>JourLoc</h2>
+        </div>
+        <p class="login-desc">Enter the journal access password to decrypt and open your logs.</p>
+        <div class="login-input-container">
+          <input id="passwordInput" type="password" class="text-input" placeholder="Enter password" />
+        </div>
+        <button id="loginButton" class="primary-button login-btn">Unlock Journal</button>
         <div id="loginError" class="error"></div>
       </div>
     </div>
 
+    <!-- MathJax / Marked Configuration -->
     <script>
       window.MathJax = {
         tex: {

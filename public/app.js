@@ -31,27 +31,43 @@ const elements = {
   editorRight: document.getElementById("editorRight"),
   toggleEditor: document.getElementById("toggleEditor"),
   app: document.getElementById("app"),
+  logoutButton: document.getElementById("logoutButton"),
 };
 
 async function apiFetch(path, options = {}) {
-  const response = await fetch(path, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    ...options,
-  });
+  try {
+    const response = await fetch(path, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      ...options,
+    });
 
-  if (response.status === 401) {
-    showLogin();
+    if (response.status === 401) {
+      showLogin();
+      return null;
+    }
+
+    return response.json();
+  } catch (err) {
+    console.error("API error:", err);
+    setStatus("Network error. Check connection.");
     return null;
   }
-
-  return response.json();
 }
 
 function showLogin() {
   elements.loginOverlay.classList.remove("hidden");
+  // Clean memory state for security
+  state.pages = [];
+  state.tags = [];
+  state.selectedPage = null;
+  state.search = "";
+  state.tagFilter = "";
+  clearEditor();
+  renderPages();
+  renderTags();
 }
 
 function hideLogin() {
@@ -62,14 +78,39 @@ function hideLogin() {
 
 function setStatus(message) {
   elements.status.textContent = message || "";
+  // Fade out status after some time if it's a notification
+  if (message && message !== "New page" && !message.startsWith("Editing page")) {
+    setTimeout(() => {
+      if (elements.status.textContent === message) {
+        if (state.selectedPage) {
+          setStatus(`Editing page #${state.selectedPage.id}`);
+        } else {
+          setStatus("New page");
+        }
+      }
+    }, 4000);
+  }
 }
 
 function renderPages() {
   elements.pageList.innerHTML = "";
+  if (state.pages.length === 0) {
+    const placeholder = document.createElement("div");
+    placeholder.className = "sidebar-placeholder";
+    placeholder.textContent = "No pages found";
+    elements.pageList.appendChild(placeholder);
+    return;
+  }
+
   state.pages.forEach((page) => {
     const item = document.createElement("div");
     item.className = "page-item" + (state.selectedPage?.id === page.id ? " active" : "");
-    item.textContent = page.title;
+    
+    // Create modern item content with subtle icon & meta details
+    item.innerHTML = `
+      <div class="page-item__title">${escapeHtml(page.title)}</div>
+      <div class="page-item__date">${formatDate(page.updated_at || page.created_at)}</div>
+    `;
     item.addEventListener("click", () => selectPage(page.id));
     elements.pageList.appendChild(item);
   });
@@ -77,10 +118,21 @@ function renderPages() {
 
 function renderTags() {
   elements.tagList.innerHTML = "";
+  if (state.tags.length === 0) {
+    const placeholder = document.createElement("div");
+    placeholder.className = "sidebar-placeholder";
+    placeholder.textContent = "No tags";
+    elements.tagList.appendChild(placeholder);
+    return;
+  }
+
   state.tags.forEach((tag) => {
     const item = document.createElement("div");
     item.className = "tag" + (state.tagFilter === tag ? " active" : "");
-    item.textContent = tag;
+    item.innerHTML = `
+      <span class="tag-hash">#</span>
+      <span class="tag-name">${escapeHtml(tag)}</span>
+    `;
     item.addEventListener("click", () => {
       state.tagFilter = state.tagFilter === tag ? "" : tag;
       loadPages();
@@ -90,6 +142,30 @@ function renderTags() {
   });
 }
 
+function escapeHtml(text) {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch (e) {
+    return dateStr;
+  }
+}
+
 function clearEditor() {
   state.selectedPage = null;
   elements.titleInput.value = "";
@@ -97,6 +173,7 @@ function clearEditor() {
   elements.contentInput.value = "";
   renderPreview();
   setStatus("New page");
+  renderPages();
 }
 
 async function loadTags() {
@@ -136,8 +213,9 @@ async function selectPage(id) {
 }
 
 async function saveCurrentPage() {
+  const title = elements.titleInput.value.trim();
   const payload = {
-    title: elements.titleInput.value.trim(),
+    title: title || "Untitled entry",
     content: elements.contentInput.value,
     tags: elements.tagsInput.value
       .split(",")
@@ -145,8 +223,9 @@ async function saveCurrentPage() {
       .filter((t) => t.length > 0),
   };
 
-  if (!payload.title) {
+  if (!title) {
     setStatus("Title is required");
+    elements.titleInput.focus();
     return;
   }
 
@@ -167,7 +246,7 @@ async function saveCurrentPage() {
   state.selectedPage = data.page;
   await loadPages();
   await loadTags();
-  setStatus("Saved");
+  setStatus("Saved successfully");
 }
 
 async function deleteCurrentPage() {
@@ -186,7 +265,7 @@ async function deleteCurrentPage() {
   clearEditor();
   await loadPages();
   await loadTags();
-  setStatus("Deleted");
+  setStatus("Deleted page");
 }
 
 async function login() {
@@ -196,20 +275,39 @@ async function login() {
     return;
   }
 
-  const response = await fetch("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
-  });
+  elements.loginButton.textContent = "Unlocking...";
+  elements.loginButton.disabled = true;
 
-  if (!response.ok) {
-    elements.loginError.textContent = "Wrong password";
-    return;
+  try {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.ok) {
+      elements.loginError.textContent = "Wrong password";
+      return;
+    }
+
+    hideLogin();
+    await loadPages();
+    await loadTags();
+  } catch (err) {
+    elements.loginError.textContent = "Failed to connect to server";
+  } finally {
+    elements.loginButton.textContent = "Unlock Journal";
+    elements.loginButton.disabled = false;
   }
+}
 
-  hideLogin();
-  await loadPages();
-  await loadTags();
+async function logout() {
+  const response = await fetch("/api/logout", {
+    method: "POST",
+  });
+  if (response.ok) {
+    showLogin();
+  }
 }
 
 function renderPreview() {
@@ -255,11 +353,24 @@ function bindEvents() {
   elements.savePage.addEventListener("click", saveCurrentPage);
   elements.deletePage.addEventListener("click", deleteCurrentPage);
   elements.contentInput.addEventListener("input", renderPreview);
+  
+  if (elements.logoutButton) {
+    elements.logoutButton.addEventListener("click", logout);
+  }
+
   // Toggle editor visibility
   elements.toggleEditor.addEventListener("click", () => {
     const collapsed = elements.app.classList.toggle("editor-collapsed");
     elements.toggleEditor.title = collapsed ? "Show editor" : "Hide editor";
-    elements.toggleEditor.textContent = collapsed ? "⇥" : "⇤";
+    const spanText = elements.toggleEditor.querySelector("span");
+    const svgIcon = elements.toggleEditor.querySelector("svg");
+    
+    if (spanText) {
+      spanText.textContent = collapsed ? "Show editor" : "Hide editor";
+    }
+    if (svgIcon) {
+      svgIcon.style.transform = collapsed ? "rotate(180deg)" : "rotate(0deg)";
+    }
     // re-run MathJax typeset after layout change
     setTimeout(() => renderPreview(), 50);
   });
@@ -269,25 +380,30 @@ function bindEvents() {
     let isDragging = false;
     let startX = 0;
     let startWidth = 0;
+    
     elements.sidebarResizer.addEventListener("mousedown", (e) => {
       isDragging = true;
       startX = e.clientX;
       startWidth = elements.sidebar.offsetWidth;
       document.body.style.userSelect = "none";
+      elements.sidebarResizer.classList.add("resizer--active");
     });
+    
     document.addEventListener("mousemove", (e) => {
       if (!isDragging) return;
       const dx = e.clientX - startX;
       let newWidth = startWidth + dx;
-      const min = 120;
-      const max = window.innerWidth - 200;
+      const min = 200;
+      const max = Math.min(600, window.innerWidth - 300);
       newWidth = Math.max(min, Math.min(max, newWidth));
       elements.sidebar.style.width = `${newWidth}px`;
     });
+    
     document.addEventListener("mouseup", () => {
       if (isDragging) {
         isDragging = false;
         document.body.style.userSelect = "";
+        elements.sidebarResizer.classList.remove("resizer--active");
       }
     });
   }
@@ -298,36 +414,50 @@ function bindEvents() {
     let startX = 0;
     let leftStart = 0;
     let rightStart = 0;
+    
     elements.editorResizer.addEventListener("mousedown", (e) => {
       dragging = true;
       startX = e.clientX;
       leftStart = elements.editorLeft.getBoundingClientRect().width;
       rightStart = elements.editorRight.getBoundingClientRect().width;
       document.body.style.userSelect = "none";
+      elements.editorResizer.classList.add("resizer--active");
     });
+    
     document.addEventListener("mousemove", (e) => {
       if (!dragging) return;
       const dx = e.clientX - startX;
       let newLeft = leftStart + dx;
-      let newRight = Math.max(100, rightStart - dx);
-      const minLeft = 120;
-      const minRight = 120;
+      let newRight = Math.max(200, rightStart - dx);
+      const minLeft = 200;
+      const minRight = 200;
       if (newLeft < minLeft) newLeft = minLeft;
       if (newRight < minRight) newRight = minRight;
       elements.editor.style.gridTemplateColumns = `${newLeft}px 8px ${newRight}px`;
     });
+    
     document.addEventListener("mouseup", () => {
       if (dragging) {
         dragging = false;
         document.body.style.userSelect = "";
+        elements.editorResizer.classList.remove("resizer--active");
       }
     });
   }
+
   elements.searchInput.addEventListener("input", (event) => {
     state.search = event.target.value.trim();
     loadPages();
   });
+  
+  elements.passwordInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      login();
+    }
+  });
+
   elements.loginButton.addEventListener("click", login);
+  
   elements.sidebarToggle.addEventListener("click", () => {
     elements.sidebar.classList.toggle("sidebar--collapsed");
   });

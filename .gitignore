@@ -1,6 +1,5 @@
 node_modules/
 .env
-.env.*
 *.log
 data/
 target/
@@ -14,3 +13,6 @@ target/
 *.sqlite3
 *.db
 .pytest_cache/
+
+package-lock.json
+vendor/
